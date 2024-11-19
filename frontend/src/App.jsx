@@ -1,4 +1,4 @@
-import {BrowserRouter,Routes,Route,Navigate} from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Signup } from "./Pages/Signup";
 import { Signin } from "./Pages/Signin";
 import { Dashboard } from "./Pages/Dashboard";
@@ -16,20 +16,21 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem('auth');
     if (!token) {
-      dispatch(logout()); 
+      dispatch(logout());
     }
   }, [dispatch]);
-  console.log(isAuthenticated,"isAuth");
+  console.log(isAuthenticated, "isAuth");
   return (
     <>
-    <BrowserRouter>
-    <Routes>
-        <Route path="/signin" element={!isAuthenticated ? <Signin /> : <Navigate to="/dashboard" />} />
-        <Route path="/signup" element={!isAuthenticated ? <Signup /> : <Navigate to="/dashboard" />} />        
-        <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/signin" />} />
-        <Route path="/send" element={<SendMoney/>}/> 
-    </Routes>
-    </BrowserRouter>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/signin"} />} />
+          <Route path="/signin" element={!isAuthenticated ? <Signin /> : <Navigate to="/dashboard" />} />
+          <Route path="/signup" element={!isAuthenticated ? <Signup /> : <Navigate to="/dashboard" />} />
+          <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/signin" />} />
+          <Route path="/send" element={<SendMoney />} />
+        </Routes>
+      </BrowserRouter>
     </>
   )
 }
