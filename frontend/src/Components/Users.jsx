@@ -10,7 +10,6 @@ export const Users = () => {
 
     useEffect(()=>{
         userSearch();
-        console.log("IM called")
     },[filter])
 
     const userSearch = async() => {
@@ -21,7 +20,7 @@ export const Users = () => {
         }
        }
        catch(err){
-        alert(err);
+        alert(err.response.data.message);
        }
     }
 
@@ -32,12 +31,13 @@ export const Users = () => {
        }
        debounceTimeout.current =  setTimeout(()=>{
             setFilter(value)
-        },600) 
+        },550) 
     }
  
     return <>
         <div className="font-bold mt-6 text-lg">
-            Users
+            Users            Your balance
+
         </div>
         <div className="my-2">
             <input onChange={(e) => {filterUser(e)}} type="text" placeholder="Search users..." className="w-full px-2 py-1 border rounded border-slate-200"></input>
