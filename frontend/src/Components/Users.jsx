@@ -5,50 +5,52 @@ import { useNavigate } from "react-router-dom";
 
 export const Users = () => {
     const [users, setUsers] = useState([]);
-    const [filter,setFilter] = useState("");
+    const [filter, setFilter] = useState("");
     const debounceTimeout = useRef(null);
 
-    useEffect(()=>{
+    useEffect(() => {
         userSearch();
-    },[filter])
+    }, [filter])
 
-    const userSearch = async() => {
-       try{
-        const resp = await axios.get(`http://localhost:3000/api/v1/user/bulk?filter=${filter}`);
-        if(resp && resp.data){
-            setUsers(resp.data.user)
+    const userSearch = async () => {
+        try {
+            const resp = await axios.get(`http://localhost:3000/api/v1/user/bulk?filter=${filter}`);
+            if (resp && resp.data) {
+                setUsers(resp.data.user)
+            }
         }
-       }
-       catch(err){
-        alert(err.response.data.message);
-       }
+        catch (err) {
+            alert(err.response.data.message);
+        }
     }
 
     const filterUser = (e) => {
-       const value = e.target.value;
-       if(debounceTimeout.current){
-        clearTimeout(debounceTimeout.current);
-       }
-       debounceTimeout.current =  setTimeout(()=>{
+        const value = e.target.value;
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
+        }
+        debounceTimeout.current = setTimeout(() => {
             setFilter(value)
-        },550) 
+        }, 550)
     }
- 
+
     return <>
         <div className="font-bold mt-6 text-lg">
             Users            Your balance
-
         </div>
         <div className="my-2">
-            <input onChange={(e) => {filterUser(e)}} type="text" placeholder="Search users..." className="w-full px-2 py-1 border rounded border-slate-200"></input>
+            <input onChange={(e) => { filterUser(e) }} type="text" placeholder="Search users..." className="w-full px-2 py-1 border rounded border-slate-200"></input>
         </div>
-        <div>
-            {users.map(user => <User user={user} />)}
+        <div className="overflow-x-hidden overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 h-96">
+            {users.map((user) => (
+                <User key={user.id} user={user} />
+            ))}
         </div>
+
     </>
 }
 
-function User({user}) {
+function User({ user }) {
     const navigate = useNavigate();
 
     return <div className="flex justify-between">

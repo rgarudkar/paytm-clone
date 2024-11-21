@@ -43,8 +43,8 @@ export const Signin = () => {
       <div className="rounded-lg bg-white w-80 text-center p-2 h-max px-4">
         <Heading label={"Sign in"} />
         <SubHeading label={"Enter your credentials to access your account"} />
-        <InputBox onChange={(e) => setUsername(e.target.value)} placeholder="Username" label={"Email"} />
-        <InputBox onChange={(e) => setPassword(e.target.value)} placeholder="123456" label={"Password"} />
+        <InputBox type="text" onChange={(e) => setUsername(e.target.value)} placeholder="Username" label={"Email"} />
+        <InputBox  type="password"  onChange={(e) => setPassword(e.target.value)} placeholder="123456" label={"Password"} />
         <div className="pt-4">
           <Button onClick={handleLogin} label={"Sign in"} />
         </div>

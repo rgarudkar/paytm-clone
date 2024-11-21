@@ -19,7 +19,6 @@ function App() {
       dispatch(logout());
     }
   }, [dispatch]);
-  console.log(isAuthenticated, "isAuth");
   return (
     <>
       <BrowserRouter>

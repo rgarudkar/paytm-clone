@@ -11,7 +11,7 @@ export const loginAsync = createAsyncThunk(
   'auth/loginAsync',
   async ({ username, password }) => {
     const response = await axios.post('http://localhost:3000/api/v1/user/signin', { username, password });
-    return response.data.token;
+    return {token : response.data.token, username};
   }
 );
 
@@ -22,6 +22,7 @@ const authSlice = createSlice({
     logout: (state) => {
       state.isAuthenticated = false;
       state.token = null;
+      state.username = null;
       localStorage.removeItem('auth'); // Clear token
     },
   },
@@ -29,8 +30,9 @@ const authSlice = createSlice({
     builder
       .addCase(loginAsync.fulfilled, (state, action) => {
         state.isAuthenticated = true;
-        state.token = action.payload;
-        localStorage.setItem('auth', action.payload); // Persist token
+        state.token = action.payload.token;
+        state.username = action.payload.username;
+        localStorage.setItem('auth', action.payload.token); // Persist token
       })
       .addCase(loginAsync.rejected, (state) => {
         state.error = 'Login failed';
