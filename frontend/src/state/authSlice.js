@@ -5,6 +5,7 @@ const initialState = {
   isAuthenticated: !!localStorage.getItem('auth'), // Initialize based on localStorage
   token: localStorage.getItem('auth') || null,
   error: null,
+  username : localStorage.getItem('username') || null
 };
 
 export const loginAsync = createAsyncThunk(
@@ -33,6 +34,7 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.username = action.payload.username;
         localStorage.setItem('auth', action.payload.token); // Persist token
+        localStorage.setItem('username',action.payload.username);
       })
       .addCase(loginAsync.rejected, (state) => {
         state.error = 'Login failed';
