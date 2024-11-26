@@ -14,16 +14,24 @@ export const Users = () => {
 
     const userSearch = async () => {
         try {
-            const resp = await axios.get(`http://localhost:3000/api/v1/user/bulk?filter=${filter}`);
+            const token = localStorage.getItem('auth'); 
+            const headers = {
+                Authorization: `Bearer ${token}`, 
+            };
+    
+            const resp = await axios.get(
+                `http://localhost:3000/api/v1/user/bulk?filter=${filter}`,
+                { headers } 
+            );
+    
             if (resp && resp.data) {
-                setUsers(resp.data.user)
+                setUsers(resp.data.users); 
             }
+        } catch (err) {
+            alert(err.response?.data?.message || "An error occurred");
         }
-        catch (err) {
-            alert(err.response.data.message);
-        }
-    }
-
+    };
+    
     const filterUser = (e) => {
         const value = e.target.value;
         if (debounceTimeout.current) {

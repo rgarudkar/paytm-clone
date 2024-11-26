@@ -130,42 +130,37 @@ router.put("/", authMiddleware, async (req, res) => {
     }
 });
 
-router.get("/bulk", async (req, res) => {
+router.get("/bulk",authMiddleware, async (req, res) => {
     const filter = req.query.filter || "";
+    const loggedInUserId = req.userId; // Retrieved from authMiddleware
 
-    const users = await User.find({
-        $or: [
-            {
-                firstName: {
-                    "$regex": filter,
-                    "$options": "i" // Case-insensitive
-                }
-            },
-            {
-                lastName: {
-                    "$regex": filter,
-                    "$options": "i" // Case-insensitive
-                }
-            }
-        ]
-    });
-
-    if(users.length>=1){
-        res.json({
-            user: users.map(user => ({
-                username: user.username,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                _id: user._id
-            }))
+    try {
+        const users = await User.find({
+            _id: { $ne: loggedInUserId }, // Exclude the logged-in user
+            $or: [
+                { firstName: { "$regex": filter, "$options": "i" } }, // Case-insensitive
+                { lastName: { "$regex": filter, "$options": "i" } }   // Case-insensitive
+            ]
         });
-    }
-    else{
-        res.status(404).json({
-            message : "User not found"
-        })
+
+        if (users.length >= 1) {
+            res.json({
+                users: users.map(user => ({
+                    username: user.username,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    _id: user._id
+                }))
+            });
+        } else {
+            res.status(404).json({ message: "User not found" });
+        }
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        res.status(500).json({ message: "An error occurred" });
     }
 });
+
 
 
 module.exports = router;

@@ -12,7 +12,10 @@ import SubHeading from "../Components/SubHeading"
 export const Signin = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isAuthenticated, error } = useSelector((state) => state.auth);
+  const { isAuthenticated, error } = useSelector((state) => ({
+    isAuthenticated: state.auth.isAuthenticated,
+    error: state.auth.error,
+  }));  
   console.log(isAuthenticated,"hell")
 
   const [username, setUsername] = useState('');
@@ -32,7 +35,7 @@ export const Signin = () => {
         navigate('/dashboard');
       })
       .catch((err) => {
-        alert(err);
+        alert(error);
       });
   };
 
