@@ -5,6 +5,7 @@ import { Dashboard } from "./Pages/Dashboard";
 import { SendMoney } from "./Pages/SendMoney";
 import { useSelector, useDispatch } from 'react-redux';
 import { useEffect } from "react";
+import { Transactions } from "./Pages/Transactions";
 import { logout } from './state/authSlice';
 import "./index.css"
 
@@ -28,6 +29,7 @@ function App() {
           <Route path="/signup" element={!isAuthenticated ? <Signup /> : <Navigate to="/dashboard" />} />
           <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/signin" />} />
           <Route path="/send" element={<SendMoney />} />
+          <Route path="/transactions" element={<Transactions />} />
         </Routes>
       </BrowserRouter>
     </>
