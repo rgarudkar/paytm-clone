@@ -15,7 +15,6 @@ router.get("/balance",authMiddleware,async(req,res)=>{
     })
 });
 
-
 router.post("/transfer", authMiddleware, async (req, res) => {
     const session = await mongoose.startSession();
     try {
@@ -36,8 +35,13 @@ router.post("/transfer", authMiddleware, async (req, res) => {
             return res.status(400).json({ message: "Invalid account" });
         }
 
+        // Capture sender's balance before and after the transaction
         const senderBalanceBefore = senderAccount.balance;
         const senderBalanceAfter = senderBalanceBefore - amount;
+
+        // Capture receiver's balance before and after the transaction
+        const receiverBalanceBefore = receiverAccount.balance;
+        const receiverBalanceAfter = receiverBalanceBefore + amount;
 
         // Deduct amount from sender's account
         await Account.updateOne(
@@ -58,8 +62,10 @@ router.post("/transfer", authMiddleware, async (req, res) => {
             senderId: senderAccount.userId,
             receiverId: receiverAccount.userId,
             amount,
-            balanceBefore: senderBalanceBefore,
-            balanceAfter: senderBalanceAfter,
+            senderBalanceBefore: senderBalanceBefore, // Sender's balance before the transaction
+            senderBalanceAfter: senderBalanceAfter,   // Sender's balance after the transaction
+            receiverBalanceBefore, // Receiver's balance before the transaction
+            receiverBalanceAfter,  // Receiver's balance after the transaction
         });
 
         await transaction.save({ session });
@@ -77,32 +83,71 @@ router.post("/transfer", authMiddleware, async (req, res) => {
     }
 });
 
-router.get('/transactions', async (req, res) => {
-    const userId = req.userId; // Assuming userMiddleware sets this
+
+router.get('/transactions', authMiddleware, async (req, res) => {
+    const userId = req.userId; // The logged-in user ID
     const { page = 1, limit = 10 } = req.query;
 
     try {
-        // Fetch transactions with selected fields
-        const transactions = await Transaction.find({ fromId: userId })
-            .select('toId amount balanceBefore balanceAfter createdAt') // Include `toId`
-            .populate('receiverId', 'username firstName') // Include only specific fields
-            .sort({ createdAt: -1 }) // Sort by latest transactions
-            .skip((page - 1) * limit)
-            .limit(parseInt(limit));
-
-        // Get total count of transactions for pagination
-        const total = await Transaction.countDocuments({ fromId: userId });
+        // Fetch both sent and received transactions
+        const transactions = await Transaction.find({
+            $or: [
+                { senderId: userId },    // User is the sender
+                { receiverId: userId }    // User is the receiver
+            ]
+        })
+            .select('senderId receiverId amount senderBalanceBefore senderBalanceAfter receiverBalanceBefore receiverBalanceAfter createdAt') // Fields to return
+            .populate('senderId', 'username firstName lastName') // Populate sender info
+            .populate('receiverId', 'username firstName lastName') // Populate receiver info
+            .sort({ createdAt: -1 }) // Sort by latest transaction
+            .skip((page - 1) * parseInt(limit)) // Pagination
+            .limit(parseInt(limit)); // Limit the number of results
+        console.log(transactions[0].senderId._id.toString())
+        const processedTransactions = transactions.map(
+            transaction => {
+            if (transaction.receiverId._id.toString() === userId) {
+                // User is the receiver, include sender details
+                return {
+                    createdAt:transaction.createdAt ,
+                    balanceBefore: transaction.receiverBalanceBefore,
+                    balanceAfter: transaction.receiverBalanceAfter,
+                    firstname: transaction.senderId.firstName,
+                    lastname: transaction.senderId.lastName,
+                    username: transaction.senderId.username,
+                    amount:transaction.amount,
+                };
+            } else if (transaction.senderId._id.toString() === userId) {
+                console.log(transaction)
+               return {
+                    createdAt:transaction.createdAt ,
+                    balanceBefore: transaction.senderBalanceBefore,
+                    balanceAfter: transaction.senderBalanceAfter,
+                    firstname: transaction.receiverId.firstName,
+                    lastname: transaction.receiverId.lastName,
+                    username: transaction.receiverId.username,
+                    amount:transaction.amount,   
+                };
+            }
+            return transaction;
+        });          
+            
+            
+        const total = await Transaction.countDocuments({
+            $or: [
+                { senderId: userId },
+                { receiverId: userId }
+            ]
+        });
 
         res.json({
-            transactions,
-            currentPage: parseInt(page), // Ensure it's an integer
+            processedTransactions,
+            currentPage: parseInt(page),
             totalPages: Math.ceil(total / limit),
         });
     } catch (error) {
+        console.error("Error fetching transactions:", error.message);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
-
-
 
 module.exports = router;

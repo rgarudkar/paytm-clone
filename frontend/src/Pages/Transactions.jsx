@@ -17,8 +17,10 @@ export const Transactions = () => {
             const resp = await axios.get("http://localhost:3000/api/v1/account/transactions",{headers});
             
             if(resp && resp.data){
-                setTransactions(resp.data.transactions);
+                setTransactions(resp.data.processedTransactions);
             }
+            // console.log(resp.data.processedTransactions)
+
         }
         catch(err){
             alert(err.response?.data?.message || "An error occurred");
@@ -30,7 +32,8 @@ export const Transactions = () => {
             <h1 className="text-2xl font-bold mb-4">Previous Transactions</h1>
             <div className="overflow-y-scroll h-[34rem] scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
                 {transactions && transactions.length > 0 ? (
-                    transactions.map((txn) => <TransactionCard key={txn._id} transaction={txn} />)
+                    transactions.map((txn) =>                  
+                    <TransactionCard key={txn.createdAt} transaction={txn} />)
                 ) : (
                     <p>No transactions found</p>
                 )}
